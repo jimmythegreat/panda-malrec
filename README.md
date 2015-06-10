@@ -7,7 +7,7 @@ This fork adds many features and allows multiple records at once.
 Usage
 -----
 
-This system processes executables and runs them in PANDA. First the malware is added to an SQLite database using submit.py. Then malrec gets an item from the DB and starts a record using PANDA. It creates a folder in the results directory named after the sample's sha1. The following is then placed in this directory as malrec processes the sample:
+This system processes executables and runs them in PANDA. It allows for multiple PANDA processes to run at the same time. First the malware is added to an SQLite database using submit.py. Then malrec gets an item from the DB and starts a record using PANDA. It creates a folder in the results directory named after the sample's sha1. The following is then placed in this directory as malrec processes the sample:
 * file.zip : contains the original sample zipped
 * log.log : log of the process
 * panda.stderr and panda.stdout : error and output of the panda process
@@ -16,6 +16,8 @@ This system processes executables and runs them in PANDA. First the malware is a
 * replay.rr : compressed replay using RRPack (if enabled)
 
 The configuration file is 'malrec.conf' (conf/malrec.conf). It has comments for all the required settings.
+
+To run, run Malrec.py after you have made changes to malrec.conf and created your VMs.
 
 VM Configuration
 ----------------
