@@ -2,7 +2,7 @@ panda-malrec
 ============
 
 A system to record malware using [PANDA](http://github.com/moyix/panda).
-This fork adds many features and allows multiple records at once.
+This fork allows multiple records at once.
 
 Usage
 -----
