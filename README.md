@@ -4,6 +4,8 @@ panda-malrec
 A system to record malware using [PANDA](http://github.com/moyix/panda).
 This fork allows multiple records at once.
 
+This system is currently being used to generate ~4,000 replays per day using 20 VMs.
+
 Usage
 -----
 
