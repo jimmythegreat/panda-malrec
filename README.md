@@ -40,17 +40,6 @@ Recommended: If you would like to revert to a snapshot instead of creating a cop
 
 Repeat this process for addional VMs.
 
-GUI Analysis
-------------
-
-In order for the GUI analysis and actuation to work, you will need to use this branch of PANDA:
-
-https://github.com/moyix/panda/tree/wip/unsafememaccess
-
-And then symlink the `pmemaddressspace.py` script into Volatility's `volatility/plugins/addrspaces` subdirectory.
-
-Note that you will get poor results unless you disable mouse acceleration in the guest VMs.
-
 Disclaimer
 ----------
 
