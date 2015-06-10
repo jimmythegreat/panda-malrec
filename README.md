@@ -2,64 +2,58 @@ panda-malrec
 ============
 
 A system to record malware using [PANDA](http://github.com/moyix/panda).
-
-This is the system currently used by
-http://panda.gtisc.gatech.edu/malrec/
+This fork adds many features and allows multiple records at once.
 
 Usage
 -----
 
-This system processes executables and runs them in PANDA. The basic
-workflow takes samples from `queue/pending`, passes them off to the
-`runmal.py`, which eventually deposits them in `queue/finished`. It also
-writes a stamp in `logs/stamps`. At this point, The logs are compressed
-using `rrpack.py` from [PANDA](http://github.com/moyix/panda).
+This system processes executables and runs them in PANDA. First the malware is added to an SQLite database using submit.py. Then malrec gets an item from the DB and starts a record using PANDA. It creates a folder in the results directory named after the sample's sha1. The following is then placed in this directory as malrec processes the sample:
+* file.zip : contains the original sample zipped
+* log.log : log of the process
+* panda.stderr and panda.stdout : error and output of the panda process
+* pcap.pcap : network traffic of the process
+* -rr-snp and -rr-nondet.log : the replay of the process
+* replay.rr : compressed replay using RRPack (if enabled)
 
-I use a fairly low-tech approach to managing this parallel queue that
-relies on `inotifywait` and GNU `parallel`. To detect new samples and
-run them, I use:
+The configuration file is 'malrec.conf' (conf/malrec.conf). It has comments for all the required settings.
 
-    while true; do ls queue/pending/ | parallel -j 4 python scripts/runmal.py conf/malrec.config {/} {%} ; sleep 600 ; done
+VM Configuration
+----------------
 
-And to detect when PANDA has finished recording and pack the logs:
+1. Create a VM
+    * ./qemu-img create -f qcow2 /path/to/win7SP1_001.qcow2 20G
+2. Start the VM
+    * /path/to/panda/qemu/x86_64-softmmu/qemu-system-x86_64 -drive file=/path/to/win7SP1_001.qcow2,if=ide,cache=unsafe -m 512 -cdrom /path/to/Windows_7SP1.iso -vnc :1
+3. Connect to the VM using vnc
+    * vncviewer localhost:5901
+4. Install the OS
+5. Configure the VM
+    The following must be done in order to use malrec with your qemu VM's:
+    1. The programs in the 'Programs' section of the conf must be disabled or installed and configured
+    2. UAC must be disabled
+    3. The command prompt must be open and have focus
 
-    inotifywait -q -m -r -e MOVED_TO -e CLOSE_WRITE --format %w%f logs/stamps/ | parallel -u -j 4 scripts/pack.sh logs/rr/{/}
+The following are suggested changes to the VM:
+* Disable auto-run for all devices
 
-Most of the configuration lives in [`malrec.config`](conf/malrec.config),
-but I haven't been great about making sure everything references that,
-so there are quite a few absolute paths hanging around in various
-scripts. Beware!
+Recommended: If you would like to revert to a snapshot instead of creating a copy of the original qcow create a snapshot using 'savevm name' where name is the name of the snapshot and place name in the conf.
 
-Once per day, I also generate movies from the replays, and check the
-sample IDs with VirusTotal. These periodic tasks are managed by
-`cron`. My crontab looks like:
-
-    30 22 * * * /home/brendan/malrec/scripts/fillqueue.sh
-    00,10,20,30,40,50 * * * * /home/brendan/malrec/scripts/genindex.sh
-    00 4 * * * /home/brendan/malrec/scripts/vtlookup.py /home/brendan/malrec/conf/malrec.config
-    00 4 * * * /home/brendan/malrec/scripts/movies.sh
-
-Samples become available once per day. The `genindex.sh` just builds the
-(very ugly) web page every 10 minutes.
+Repeat this process for addional VMs.
 
 GUI Analysis
 ------------
 
-In order for the GUI analysis and actuation to work, you will need to
-use this branch of PANDA:
+In order for the GUI analysis and actuation to work, you will need to use this branch of PANDA:
 
 https://github.com/moyix/panda/tree/wip/unsafememaccess
 
-And then symlink the `pmemaddressspace.py` script into Volatility's
-`volatility/plugins/addrspaces` subdirectory.
+And then symlink the `pmemaddressspace.py` script into Volatility's `volatility/plugins/addrspaces` subdirectory.
 
-Note that you will get poor results unless you disable mouse
-acceleration in the guest VMs.
+Note that you will get poor results unless you disable mouse acceleration in the guest VMs.
 
 Disclaimer
 ----------
 
-This is not intended to work for anyone else out of the box, just to
-provide a starting point. You will undoubtedly have to make heavy local
-modifications. That said, if you want to make it more general and
-contribute improvements back, please feel free!
+The Detect.py script may require modifications in the set_paths and get_type functions.
+
+The RunMalware.py script relies on sleeping for various things. If your VM runs slow, the sleep time may need to be increased.
