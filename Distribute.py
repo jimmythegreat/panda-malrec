@@ -188,7 +188,9 @@ class Distribute:
         sh.setFormatter(formatter)
         logger.addHandler(sh)
 
-        fh = RotatingFileHandler('Logs/log.log', maxBytes=100*1024*1024, backupCount=10)
+        if not os.path.isdir('logs'):
+            os.mkdir('logs')
+        fh = RotatingFileHandler('logs/log.log', maxBytes=100*1024*1024, backupCount=10)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
